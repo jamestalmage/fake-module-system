@@ -1,0 +1,42 @@
+{
+  "name": "fake-module-system",
+  "version": "0.0.0",
+  "description": "A mock module system for testing require extensions",
+  "license": "MIT",
+  "repository": "jamestalmage/fake-module-system",
+  "author": {
+    "name": "James Talmage",
+    "email": "james@talmage.io",
+    "url": "github.com/jamestalmage"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "xo && nyc --reporter=lcov --reporter=text ava"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "require",
+    "extension",
+    "transform",
+    "testing",
+    "mock",
+    "hook",
+    "transpile",
+    "module"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "ava": "^0.7.0",
+    "nyc": "^4.0.1",
+    "xo": "^0.11.2"
+  },
+  "xo": {
+    "ignores": [
+      "test.js"
+    ]
+  }
+}
