@@ -16,11 +16,10 @@ $ npm install --save-dev fake-module-system
 import System from 'fake-module-system';
 
 const system = new System({
-  './foo.js': 'bar'  // a file named foo wi
-  // th content "bar"
+  './foo.js': 'bar'  // a file named foo.js with content "bar"
 }); 
 
-// alternate method from setting content in the constructor. 
+// alternate method instead of setting up content in the constructor. 
 system.content['./foo.js'] = 'bar';
 
 let module = system.load('./foo.js');
