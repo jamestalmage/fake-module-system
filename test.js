@@ -18,6 +18,16 @@ test('a module > does not require the `new` keyword.', t => {
 	t.is(module.file, './bar.js');
 });
 
+test('a module will refuse to compile if require is used and system not set', t => {
+	t.plan(1);
+	const module = mockModule();
+	try {
+		module._compile('require("/foo.js")', '/bar.js');
+	} catch (e) {
+		t.true(/System not set/.test(e.message));
+	}
+});
+
 test('a module > will throw if compiled a second time using the default _compile method', t => {
 	// You should *never* call the default _compile method twice.
 	// You *can* temporarily replace _compile with your own interceptor before calling another hook.
@@ -129,4 +139,26 @@ test('convenience transform throws if transform fails to return a string', t => 
 	system.installTransform(code => null);
 
 	t.throws(() => system.load('/foo.js'));
+});
+
+test('one module can require another', t => {
+	const system = new MockSystem({
+		'/foo.js': 'require("/bar.js")',
+		'/bar.js': 'this is bar'
+	});
+
+	var foo = system.load('/foo.js');
+
+	t.is(foo.required['/bar.js'].code, 'this is bar');
+});
+
+test('circular requires', t => {
+	const system = new MockSystem({
+		'/foo.js': 'require("/bar.js")',
+		'/bar.js': 'require("/foo.js")'
+	});
+
+	var foo = system.load('/foo.js');
+
+	t.is(foo.required['/bar.js'].required['/foo.js'], foo);
 });

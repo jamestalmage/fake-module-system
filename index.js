@@ -1,11 +1,13 @@
 'use strict';
 var path = require('path');
+var matchRequire = require('match-require');
 
-function MockModule() {
+function MockModule(system) {
 	if (!(this instanceof MockModule)) {
-		return new MockModule();
+		return new MockModule(system);
 	}
 	this._compiled = false;
+	this._system = system;
 }
 
 MockModule.prototype._compile = function (code, file) {
@@ -15,6 +17,17 @@ MockModule.prototype._compile = function (code, file) {
 	this._compiled = true;
 	this.code = code;
 	this.file = file;
+	this.required = {};
+	var required = matchRequire.findAll(code);
+	if (!(required && required.length)) {
+		return;
+	}
+	if (!this._system) {
+		throw new Error('System not set: code can not use require');
+	}
+	required.forEach(function (name) {
+		this.required[name] = this._system.load(name);
+	}, this);
 };
 
 module.exports = MockModule;
@@ -25,6 +38,7 @@ function MockSystem(content) {
 	}
 	var self = this;
 	this.content = content || {};
+	this.cache = {};
 	this.Module = MockModule;
 
 	function defaultExtension(module, filename) {
@@ -36,9 +50,17 @@ function MockSystem(content) {
 	};
 
 	this.load = function (filename) {
-		var module = new MockModule();
+		if (self.cache[filename]) {
+			return self.cache[filename];
+		}
+		var module = self.cache[filename] = new MockModule(self);
 		var extension = path.extname(filename);
-		self.extensions[extension](module, filename);
+		try {
+			self.extensions[extension](module, filename);
+		} catch (e) {
+			delete self.cache[filename];
+			throw e;
+		}
 		return module;
 	};
 

@@ -28,7 +28,9 @@
     "transpile",
     "module"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "match-require": "^1.1.1"
+  },
   "devDependencies": {
     "ava": "^0.7.0",
     "coveralls": "^2.11.4",
