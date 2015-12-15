@@ -64,3 +64,69 @@ test('a system > can have require.extensions applied', t => {
 	const module = system.load('./foo.js');
 	t.is(module.code, 'foobar');
 });
+
+test('a system > provides convenience method for installing transforms', t => {
+	const system = new MockSystem({'/foo.js': 'foo'});
+
+	system.installTransform((code, filename) => {
+		t.is(code, 'foo');
+		t.is(filename, '/foo.js');
+		return 'bar';
+	});
+
+	const module = system.load('/foo.js');
+
+	t.is(module.code, 'bar');
+});
+
+test('convenience transform plays nice with transforms added after', t => {
+	const system = new MockSystem({'/foo.js': 'foo'});
+
+	system.installTransform(code => code + ' bar');
+
+	// Install a hook that append "bar"
+	const originalHook = system.extensions['.js'];
+	system.extensions['.js'] = function (module, filename) {
+		const originalCompile = module._compile;
+		module._compile = function (code, filename) {
+			code = code.toUpperCase();
+			module._compile = originalCompile;
+			module._compile(code, filename);
+		};
+		originalHook(module, filename);
+	};
+
+	const module = system.load('/foo.js');
+
+	t.is(module.code, 'FOO BAR');
+});
+
+test('convenience transform plays nice with transforms added before', t => {
+	const system = new MockSystem({'/foo.js': 'foo'});
+
+	// Install a hook that append "bar"
+	const originalHook = system.extensions['.js'];
+	system.extensions['.js'] = function (module, filename) {
+		const originalCompile = module._compile;
+		module._compile = function (code, filename) {
+			code = code.toUpperCase();
+			module._compile = originalCompile;
+			module._compile(code, filename);
+		};
+		originalHook(module, filename);
+	};
+
+	system.installTransform(code => code + ' bar');
+
+	const module = system.load('/foo.js');
+
+	t.is(module.code, 'FOO bar');
+});
+
+test('convenience transform throws if transform fails to return a string', t => {
+	const system = new MockSystem({'/foo.js': 'foo'});
+
+	system.installTransform(code => null);
+
+	t.throws(() => system.load('/foo.js'));
+});

@@ -33,6 +33,18 @@ assert(module.file === './foo.js');
 system.extensions['.js'] = appendQuzTransform(); 
 module = system.load('./foo.js');
 assert(module.code === 'barquz');
+
+
+// Provides convenience method for installing a simple transform.
+// This is handy for verifying how your extension behaves with earlier or later extensions.
+system.installTransform((code, filename) => {
+  if (shouldTransform(filename)) {
+    return filename + ' foo';
+  }
+});
+myTransformUnderTest.install(system.extensions);
+
+
 ```
 
 Related:

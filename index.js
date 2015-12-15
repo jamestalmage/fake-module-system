@@ -41,6 +41,23 @@ function MockSystem(content) {
 		self.extensions[extension](module, filename);
 		return module;
 	};
+
+	this.installTransform = function (transformFn, ext) {
+		ext = ext || '.js';
+		var oldExtension = self.extensions[ext];
+		self.extensions[ext] = function (module, filename) {
+			var oldCompile = module._compile;
+			module._compile = function (code, filename) {
+				module._compile = oldCompile;
+				code = transformFn(code, filename);
+				if (typeof code !== 'string') {
+					throw new Error('transformFn must always return a string');
+				}
+				module._compile(code, filename);
+			};
+			oldExtension(module, filename);
+		};
+	};
 }
 
 module.exports = MockSystem;
