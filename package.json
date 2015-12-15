@@ -1,6 +1,6 @@
 {
   "name": "fake-module-system",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A mock module system for testing require extensions",
   "license": "MIT",
   "repository": "jamestalmage/fake-module-system",
